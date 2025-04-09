@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 import 'dart:convert';
 
 class ApiService {
- static const String baseUrl = "http://192.168.144.138:8000"; // Ensure this is correct
+ static const String baseUrl = "http://192.168.241.138:5000"; // Ensure this is correct
 
 
   static Future<String> recognizeCurrency(File image) async {

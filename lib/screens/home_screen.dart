@@ -1,3 +1,4 @@
+// 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -29,7 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
     await _flutterTts.speak("Welcome to SeeForMe App.");
     await Future.delayed(const Duration(seconds: 2));
     await _flutterTts.speak(
-        "Swipe right or left to navigate between options. Double tap to select.");
+      "Swipe right or left to navigate between options. Double tap to select.",
+    );
     await Future.delayed(const Duration(seconds: 3));
     _announceFocusedOption();
   }
@@ -75,12 +77,34 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       onDoubleTap: _onDoubleTap,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Home')),
-        body: Center(
-          child: Text(
-            _options[_focusedIndex]['label'],
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.black, Color(0xFF0B836A), Colors.black],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 60),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      _options[_focusedIndex]['label'],
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

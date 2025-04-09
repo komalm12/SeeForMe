@@ -2,8 +2,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:image_picker/image_picker.dart';
 // import 'package:tflite/tflite.dart';
-
 // class CurrencyRecognitionPage extends StatefulWidget {
+//   const CurrencyRecognitionPage({super.key});
 //   @override
 //   _CurrencyRecognitionPageState createState() => _CurrencyRecognitionPageState();
 // }
