@@ -21,6 +21,8 @@ dependencies:
   path: ^1.9.1
   google_mlkit_commons: ^0.11.0
   # tflite: ^1.1.2
+  # tflite_flutter: ^0.10.4
+  # tflite_flutter_helper: ^0.4.1
   image: ^3.0.2
   path_provider: 2.0.15
   flutter_launcher_icons: ^0.11.0
@@ -46,10 +48,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png 
-    - assets/best_float32.tflite
+    # - assets/best_float32.tflite
     - assets/labels.txt
     - assets/model_unquant2.tflite
     - assets/labels2.txt
+    - assets/model_unquant.tflite
+
 
 flutter_icons:
   android: true
