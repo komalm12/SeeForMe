@@ -1,12 +1,47 @@
-# Ignore Python virtual environments
+# === Python ===
 venv/
 backend/venv/
-
-# Python bytecode
 __pycache__/
 *.pyc
-
-# Ignore large libraries
+*.pyo
 *.pyd
+*.so
 *.dll
 *.lib
+
+# === Flutter ===
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+*.iml
+
+# === Android Studio & IntelliJ ===
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# === VS Code ===
+.vscode/
+
+# === Android ===
+android/local.properties
+.android/
+
+# === iOS ===
+ios/Flutter/Flutter.podspec
+ios/Pods/
+ios/Podfile.lock
+
+# === macOS (optional if building on mac) ===
+macos/Pods/
+macos/Podfile.lock
+
+# === Xcode ===
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata
+DerivedData/
