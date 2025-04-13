@@ -56,7 +56,7 @@ void main() {
       '/scan': (context) => const DocumentScanner(),
       '/color': (context) => ColorDetectionPage(),
      '/currency': (context) => const CurrencyRecognitionPage(),
-      '/object': (context) => ObjectDetectionPage(), // <-- Route to currency recognition
+      '/object': (context) => LiveObjectDetectionPage(), // <-- Route to currency recognition
     },
   ));
 }
