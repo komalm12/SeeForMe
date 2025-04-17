@@ -48,18 +48,7 @@ class _LiveObjectDetectionPageState extends State<LiveObjectDetectionPage> {
         setState(() {
           detections = detected;
         });
-
-        // Process detections and speak them with distance
-        for (var detection in detections) {
-          String label = detection['label'];
-          var distance = detection['distance'] ?? 'unknown';  // Handle unknown distances
-
-          String distanceText = distance == 'unknown' 
-            ? "$label detected" 
-            : "$label detected at $distance centimeters";
-
-          await flutterTts.speak(distanceText);
-        }
+        await flutterTts.speak("Detected: ${detections.join(', ')}");
       }
     } catch (e) {
       print("Error in detection: $e");
@@ -72,14 +61,14 @@ class _LiveObjectDetectionPageState extends State<LiveObjectDetectionPage> {
     try {
       var request = http.MultipartRequest(
         "POST",
-        Uri.parse("http://192.168.1.7:5000/detect"), // Replace with your IP
+        Uri.parse("http://192.168.4.138:5000/detect"), // Replace with your IP
       );
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
       final response = await request.send();
       if (response.statusCode == 200) {
         final responseData = await response.stream.bytesToString();
         final data = json.decode(responseData);
-        return data['detections'];  // Ensure your backend sends `distance` with detections
+        return data['detections'];
       }
     } catch (e) {
       print("Failed to send image: $e");
@@ -104,23 +93,29 @@ class _LiveObjectDetectionPageState extends State<LiveObjectDetectionPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Live Object Detection")),
-      body: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: _cameraController!.value.aspectRatio,
-            child: CameraPreview(_cameraController!),
-          ),
-          if (detections.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                "Detected: ${detections.map((d) => d['label']).join(', ')}",
-                style: TextStyle(fontSize: 18),
-              ),
-            )
-        ],
+  body: Stack(
+    children: [
+      Positioned.fill(
+        child: CameraPreview(_cameraController!),
       ),
-    );
+      if (detections.isNotEmpty)
+        Positioned(
+          bottom: 32,
+          left: 16,
+          right: 16,
+          child: Container(
+            padding: EdgeInsets.all(12),
+            color: Colors.black54,
+            child: Text(
+              "Detected: ${detections.join(', ')}",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        )
+    ],
+  ),
+);
+
   }
 }

@@ -1,100 +1,213 @@
+# # for currency & onject detection
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from ultralytics import YOLO
+# from PIL import Image
+# import requests
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # Load your models
+# object_model = YOLO("yolov8x.pt")       # Replace with your object detection model path
+# model = YOLO("models/best.pt")   # Replace with your currency recognition model path
+
+# @app.route("/detect", methods=["POST"])
+# def detect_objects():
+#     if 'image' not in request.files:
+#         return jsonify({"error": "No image uploaded"}), 400
+
+#     image_file = request.files['image']
+#     image = Image.open(image_file.stream).convert('RGB')
+#     results = object_model.predict(image)
+
+#     # detections = []
+#     detected_labels = []
+#     for r in results:
+#         for box in r.boxes:
+#             label = r.names[int(box.cls[0])]
+#             if label not in detected_labels:
+#                 detected_labels.append(label)
+#     # for result in results:
+#     #     for box in result.boxes:
+#     #         detections.append({
+#     #             "label": object_model.names[int(box.cls[0])],
+#     #             # "confidence": float(box.conf[0]),
+#     #             # "bbox": box.xyxy[0].tolist()  # [x1, y1, x2, y2]
+#     #         })
+
+#     return jsonify({"detections": detected_labels})
+
+
+# @app.route("/recognize", methods=["POST"])
+# def recognize_currency():
+#     if 'image' not in request.files:
+#         return jsonify({"error": "No image uploaded"}), 400
+
+#     image_file = request.files['image']
+#     image = Image.open(image_file.stream).convert('RGB')
+#     results = model.predict(image)
+
+#     detections = []
+#     for result in results:
+#         for box in result.boxes:
+#             detections.append({
+#                 "label": model.names[int(box.cls[0])],
+#                 "confidence": float(box.conf[0]),
+#                 "bbox": box.xyxy[0].tolist()
+#             })
+
+#     # ✅ Return top prediction only
+#     top = max(detections, key=lambda x: x['confidence'], default=None)
+#     if top:
+#         return jsonify({
+#             "currency": top["label"],
+#             "confidence": top["confidence"]
+#         })
+
+#     return jsonify({"currency": "Unknown", "confidence": 0.0})
+# if __name__ == "__main__":
+#     app.run(debug=True, host="0.0.0.0", port=5000)
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ultralytics import YOLO
 from PIL import Image
+from roboflow import Roboflow
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# Load your models
-object_model = YOLO("yolov8n.pt")       # Replace with your object detection model path
-currency_model = YOLO("models/best.pt") # Replace with your currency recognition model path
+# Load YOLOv8 object detection model (local)
+object_model = YOLO("yolov8x.pt")  # Replace with your object detection model path
 
+# Initialize Roboflow (currency detection)
+rf = Roboflow(api_key="AZkWitHZ7tFt8yHbaPks")  # Replace with your Roboflow API key
+project = rf.workspace().project("currency-detection-cgpjn")  # Your project ID
+model = project.version(1).model
+
+# ========== Object Detection (Local YOLOv8) ==========
 @app.route("/detect", methods=["POST"])
 def detect_objects():
     if 'image' not in request.files:
-        return jsonify({"error": "No image found"}), 400
+        return jsonify({"error": "No image uploaded"}), 400
 
-    # Open the image
-    image = Image.open(request.files['image'].stream)
-    
-    # Perform object detection
-    results = object_model(image)
+    image_file = request.files['image']
+    image = Image.open(image_file.stream).convert('RGB')
+
+    results = object_model.predict(image)
 
     detected_labels = []
-    for result in results:
-        for box in result.boxes:
-            # Ensure you are accessing the correct index for labels
-            label = result.names[int(box.cls[0].item())]  # Using .item() to extract the scalar value from the tensor
+    for r in results:
+        for box in r.boxes:
+            label = r.names[int(box.cls[0])]
             if label not in detected_labels:
                 detected_labels.append(label)
 
     return jsonify({"detections": detected_labels})
 
-@app.route("/recognize", methods=["POST"])
-def recognize_currency():
+
+# ========== Currency Detection (Roboflow Hosted API) ==========
+@app.route('/predict', methods=['POST'])
+def predict_currency():
     if 'image' not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+        return jsonify({'error': 'No image uploaded'}), 400
 
-    # Open the image for currency recognition
-    image_file = request.files['image']
-    image = Image.open(image_file.stream).convert('RGB')
+    image = request.files['image']
+    image.save("temp.jpg")
 
-    # Perform currency recognition
-    results = currency_model.predict(image)
+    prediction = model.predict("temp.jpg", confidence=40, overlap=30).json()
+    os.remove("temp.jpg")
 
-    detections = []
-    for result in results:
-        for box in result.boxes:
-            detections.append({
-                "label": currency_model.names[int(box.cls[0].item())],  # Using .item() for tensor to int
-                "confidence": float(box.conf[0]),
-                "bbox": box.xyxy[0].tolist()
-            })
-
-    # Return the top prediction based on confidence
-    top = max(detections, key=lambda x: x['confidence'], default=None)
-    if top:
-        return jsonify({
-            "currency": top["label"],
-            "confidence": top["confidence"]
-        })
-
-    return jsonify({"currency": "Unknown", "confidence": 0.0})
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    return jsonify(prediction)
 
 
+# ========== Run the App ==========
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000)
+
+
+
+#for currency detection
 # from flask import Flask, request, jsonify
-# from ultralytics import YOLO
-# from PIL import Image
-# import io
-# from known_widths import KNOWN_WIDTHS
+# from roboflow import Roboflow
+# import base64
+# import os
 
 # app = Flask(__name__)
-# model = YOLO("yolov8n.pt")  # No training needed
 
-# # @app.route("/detect", methods=["POST"])
-# # def detect_objects():
-# #     if 'image' not in request.files:
-# #         return jsonify({"error": "No image found"}), 400
+# # Initialize Roboflow
+# rf = Roboflow(api_key="AZkWitHZ7tFt8yHbaPks")
+# project = rf.workspace().project("cmoney-detection-qbxqs")
+# model = project.version(1).model
 
-# #     image = Image.open(request.files['image'].stream)
-# #     results = model(image)
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     if 'image' not in request.files:
+#         return jsonify({'error': 'No image uploaded'}), 400
 
-# #     detected_labels = []
-# #     for r in results:
-# #         for box in r.boxes:
-# #             label = r.names[int(box.cls[0])]
-# #             if label not in detected_labels:
-# #                 detected_labels.append(label)
+#     image = request.files['image']
+#     image.save("temp.jpg")
 
-# #     return jsonify({"detections": detected_labels})
-    
+#     prediction = model.predict("temp.jpg", confidence=40, overlap=30).json()
+#     os.remove("temp.jpg")
 
-# if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=5000, debug=True)
+#     return jsonify(prediction)
+
+# if __name__ == '__main__':
+#     app.run(host="0.0.0.0", port=5000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -152,5 +265,4 @@ if __name__ == "__main__":
 
 #     return jsonify({"detections": detections})
 
-# if __name__ == "__main__":
-#     app.run(host="0.0.0.0", port=5000, debug=True)
+

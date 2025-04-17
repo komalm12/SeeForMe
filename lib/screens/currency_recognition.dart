@@ -182,6 +182,94 @@
 //     );
 //   }
 // }
+// import 'dart:convert';
+// import 'dart:io';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_tts/flutter_tts.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:image_picker/image_picker.dart';
+
+// class CurrencyRecognitionPage extends StatefulWidget {
+//   const CurrencyRecognitionPage({super.key});
+
+//   @override
+//   State<CurrencyRecognitionPage> createState() => _CurrencyRecognitionPageState();
+// }
+
+// class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
+//   File? _image;
+//   String result = "";
+//   double confidence = 0.0;
+//   final FlutterTts flutterTts = FlutterTts();
+
+//   Future<void> pickImage() async {
+//     final picker = ImagePicker();
+//     final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+//     if (pickedFile != null) {
+//       setState(() {
+//         _image = File(pickedFile.path);
+//         result = "";
+//         confidence = 0.0;
+//       });
+//       await recognizeCurrency(_image!);
+//     }
+//   }
+
+//   Future<void> recognizeCurrency(File imageFile) async {
+//     final request = http.MultipartRequest(
+//       "POST",
+//       Uri.parse("http://192.168.205.138:5000/recognize"), // <-- Replace with your Flask IP
+//     );
+//     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+//     final response = await request.send();
+
+//     if (response.statusCode == 200) {
+//       final responseData = await response.stream.bytesToString();
+//       final data = json.decode(responseData);
+
+//       setState(() {
+//         result = data['currency'] ?? "Unknown";
+//         confidence = data['confidence'] ?? 0.0;
+//       });
+
+//       await flutterTts.speak("Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.");
+//     } else {
+//       print("Currency recognition failed");
+//       await flutterTts.speak("Failed to recognize currency");
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Currency Recognition")),
+//       body: SingleChildScrollView(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             const SizedBox(height: 20),
+//             if (_image != null) Image.file(_image!),
+//             const SizedBox(height: 16),
+//             ElevatedButton(
+//               onPressed: pickImage,
+//               child: const Text("Capture Currency"),
+//             ),
+//             const SizedBox(height: 20),
+//             if (result.isNotEmpty)
+//               Text(
+//                 "Result: $result\nConfidence: ${confidence.toStringAsFixed(2)}%",
+//                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+//                 textAlign: TextAlign.center,
+//               ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -217,23 +305,40 @@ class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
   }
 
   Future<void> recognizeCurrency(File imageFile) async {
-    final request = http.MultipartRequest(
-      "POST",
-      Uri.parse("http://192.168.1.7:5000/recognize"), // <-- Replace with your Flask IP
-    );
-    request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+    final apiKey = "AZkWitHZ7tFt8yHbaPks"; // 🔁 Replace with your Roboflow API Key
+    final projectName = "currency-detection-cgpjn"; // 🔁 Replace with your Roboflow Project Name
+    final modelVersion = "2"; // 🔁 Replace with model version, e.g., "1"
+
+    final url = Uri.parse("https://detect.roboflow.com/currency-detection-cgpjn/2?api_key=AZkWitHZ7tFt8yHbaPks");
+
+    final request = http.MultipartRequest("POST", url);
+    request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+    request.fields['confidence'] = '40'; // Optional confidence filter
+    request.fields['overlap'] = '30';    // Optional overlap setting
+
     final response = await request.send();
 
     if (response.statusCode == 200) {
       final responseData = await response.stream.bytesToString();
       final data = json.decode(responseData);
 
-      setState(() {
-        result = data['currency'] ?? "Unknown";
-        confidence = data['confidence'] ?? 0.0;
-      });
+      if (data['predictions'] != null && data['predictions'].isNotEmpty) {
+        final topPrediction = data['predictions'][0];
 
-      await flutterTts.speak("Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.");
+        setState(() {
+          result = topPrediction['class'];
+          confidence = (topPrediction['confidence'] as num) * 100;
+        });
+
+        await flutterTts.speak(
+            "Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.");
+      } else {
+        setState(() {
+          result = "No currency detected";
+          confidence = 0.0;
+        });
+        await flutterTts.speak("No currency detected.");
+      }
     } else {
       print("Currency recognition failed");
       await flutterTts.speak("Failed to recognize currency");
