@@ -108,10 +108,10 @@ class _LandingPageState extends State<LandingPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset("assets/logo.png", width: 250, height: 250),
+              Image.asset("assets/logo.png", width: 300, height: 250),
               const SizedBox(height: 20),
               const Text(
-                "Empowering Vision, Enhancing Lives.",
+                "Empowering Vision,                              Enhancing Lives.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,

@@ -27,12 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _welcomeAndGuideUser() async {
-    await _flutterTts.speak("Welcome to SeeForMe App.");
-    await Future.delayed(const Duration(seconds: 2));
+    await _flutterTts.speak("Welcome to See For Me App.");
+    await Future.delayed(const Duration(seconds: 4));
     await _flutterTts.speak(
       "Swipe right or left to navigate between options. Double tap to select.",
     );
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 5));
     _announceFocusedOption();
   }
 

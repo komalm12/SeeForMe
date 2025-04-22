@@ -61,7 +61,7 @@ class _LiveObjectDetectionPageState extends State<LiveObjectDetectionPage> {
     try {
       var request = http.MultipartRequest(
         "POST",
-        Uri.parse("http://192.168.4.138:5000/detect"), // Replace with your IP
+        Uri.parse("http://192.168.1.6:5000/detect"), // Replace with your IP
       );
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
       final response = await request.send();
