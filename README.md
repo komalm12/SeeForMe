@@ -1,16 +1,43 @@
-# see_for_me
+SeeForMe – Assistive App for Visually Impaired Individuals
 
-A new Flutter project.
+A mobile application designed to empower visually impaired users with real-time environment interaction using AI, machine learning, and accessibility-first UI.
+🚀 Features
+Currency Recognition – Identify currency notes instantly.
 
-## Getting Started
+Object Detection – Recognize surrounding objects using AI.
 
-This project is a starting point for a Flutter application.
+Color Detection – Detect and speak out color names in real time.
 
-A few resources to get you started if this is your first Flutter project:
+Document Scanning & Reading – Scan printed text and read it aloud using Text-to-Speech (TTS).
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Gesture-based Navigation – Easy controls for users without needing precise taps.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Voice Guidance – Step-by-step speech feedback throughout the app.
+
+Offline Support – Core features available without internet.
+
+🛠️ Tech Stack
+Flutter (Frontend)
+
+Flask (Backend API)
+
+YOLOv8 (Object Detection Model)
+
+Roboflow API (Model Deployment)
+
+Google ML Kit (Text Recognition, OCR)
+
+Text-to-Speech (TTS) 
+
+📚 How It Works
+User opens the app and selects a feature (Currency, Object, Color, Document).
+
+The app captures real-time camera input.
+
+AI models (YOLOv8/Roboflow/ML Kit) process the frame.
+
+Results are spoken aloud using Text-to-Speech for easy understanding.
+
+Users can navigate using simple gestures and receive voice feedback.
+
+
