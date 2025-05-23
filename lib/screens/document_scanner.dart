@@ -1,9 +1,21 @@
+
+
+// Importing Flutter material design package for UI components
 import 'package:flutter/material.dart';
+
+// Importing image_picker to capture image from camera
 import 'package:image_picker/image_picker.dart';
+
+// Dart core library for working with files
 import 'dart:io';
+
+// Flutter package for text-to-speech functionality
 import 'package:flutter_tts/flutter_tts.dart';
+
+// ML Kit package for text recognition (OCR)
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+// StatefulWidget to create a dynamic document scanner screen
 class DocumentScanner extends StatefulWidget {
   const DocumentScanner({super.key});
 
@@ -11,47 +23,62 @@ class DocumentScanner extends StatefulWidget {
   State<DocumentScanner> createState() => _DocumentScannerState();
 }
 
+// State class for DocumentScanner widget
 class _DocumentScannerState extends State<DocumentScanner> {
-  File? _image;
-  String _extractedText = "";
-  final FlutterTts _flutterTts = FlutterTts();
+  File? _image; // Holds the captured image file
+  String _extractedText = ""; // Holds the extracted text from the image
+  final FlutterTts _flutterTts = FlutterTts(); // TTS instance for speech
 
   @override
   void initState() {
     super.initState();
+    // Speak instruction on screen load
     _flutterTts.speak("Ready to scan. Double tap anywhere to capture the document.");
   }
 
+  // Function to capture image and extract text from it
   Future<void> _captureAndScan() async {
+    // Speak instruction for using the camera
     await _flutterTts.speak(
-  "Camera opened. Center the document. Tap the bottom of your screen to capture."
-);
-    final picker = ImagePicker();
-     
+      "Camera opened. Center the document. Tap the bottom of your screen to capture."
+    );
+
+    final picker = ImagePicker(); // Create an instance of ImagePicker
+
+    // Pick an image from the camera
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
+      // If user captured an image
+      File imageFile = File(pickedFile.path); // Convert picked file to File
 
+      // Create InputImage object required by ML Kit
       final inputImage = InputImage.fromFile(imageFile);
+
+      // Initialize the text recognizer (for Latin script)
       final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+
+      // Process the image to extract text
       final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
+      // Update UI state with image and extracted text
       setState(() {
         _image = imageFile;
         _extractedText = recognizedText.text;
       });
 
+      // Speak confirmation and read extracted text aloud
       await _flutterTts.speak("Text scanned. Reading now.");
       await _flutterTts.speak(_extractedText);
     } else {
+      // If user didn't capture an image
       await _flutterTts.speak("No image captured. Please try again.");
     }
   }
 
   @override
   void dispose() {
-    _flutterTts.stop();
+    _flutterTts.stop(); // Stop TTS when screen is disposed
     super.dispose();
   }
 
@@ -59,17 +86,19 @@ class _DocumentScannerState extends State<DocumentScanner> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onDoubleTap: _captureAndScan,
+        onDoubleTap: _captureAndScan, // Double tap anywhere triggers document scan
         child: Container(
-          color: Colors.black,
-          padding: const EdgeInsets.all(16),
-          alignment: Alignment.center,
+          color: Colors.black, // Background color
+          padding: const EdgeInsets.all(16), // Padding around content
+          alignment: Alignment.center, // Center content
           child: _extractedText.isEmpty
+              // If no text extracted yet, show instruction
               ? const Text(
                   "Double tap anywhere to capture the document.",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                   textAlign: TextAlign.center,
                 )
+              // If text is available, display it scrollably
               : SingleChildScrollView(
                   child: Text(
                     _extractedText,
@@ -81,116 +110,4 @@ class _DocumentScannerState extends State<DocumentScanner> {
     );
   }
 }
-// import 'dart:convert';
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:flutter_tts/flutter_tts.dart';
 
-// class DocumentScanner extends StatefulWidget {
-//   const DocumentScanner({super.key});
-
-//   @override
-//   State<DocumentScanner> createState() => _DocumentScannerState();
-// }
-
-// class _DocumentScannerState extends State<DocumentScanner> {
-//   File? _image;
-//   String _extractedText = "";
-//   bool _isProcessing = false;
-
-//   final FlutterTts _flutterTts = FlutterTts();
-
-//   Future<void> _pickImageAndScan() async {
-//     final picker = ImagePicker();
-//     final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-//     if (pickedFile == null) return;
-
-//     setState(() {
-//       _isProcessing = true;
-//       _image = File(pickedFile.path);
-//       _extractedText = "";
-//     });
-
-//     // ✅ Your server IP here (change if needed)
-//     final String serverIP = "192.168.1.2";
-//     final uri = Uri.parse("http://$serverIP:5000/ocr");
-
-//     final request = http.MultipartRequest('POST', uri);
-//     request.files.add(await http.MultipartFile.fromPath('image', _image!.path));
-
-//     try {
-//       final streamedResponse = await request.send();
-//       final responseStr = await streamedResponse.stream.bytesToString();
-
-//       if (streamedResponse.statusCode == 200) {
-//         final data = json.decode(responseStr);
-//         setState(() {
-//           _extractedText = data['text'] ?? "No text found in image.";
-//         });
-
-//         await _flutterTts.setLanguage("en-US");
-//         await _flutterTts.speak(_extractedText);
-//       } else {
-//         setState(() {
-//           _extractedText =
-//               "Server responded with error: ${streamedResponse.statusCode}";
-//         });
-//       }
-//     } catch (e) {
-//       setState(() {
-//         _extractedText =
-//             "Connection error: $e\n\nMake sure Flask is running and phone is on same Wi-Fi.";
-//       });
-//     }
-
-//     setState(() {
-//       _isProcessing = false;
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _flutterTts.stop();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text("Document Scanner"),
-//         centerTitle: true,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             ElevatedButton.icon(
-//               onPressed: _pickImageAndScan,
-//               icon: const Icon(Icons.camera_alt),
-//               label: const Text("Capture & Read Document"),
-//             ),
-//             const SizedBox(height: 20),
-//             if (_isProcessing)
-//               const CircularProgressIndicator()
-//             else ...[
-//               if (_image != null) Image.file(_image!, height: 200),
-//               const SizedBox(height: 10),
-//               Expanded(
-//                 child: SingleChildScrollView(
-//                   child: Text(
-//                     _extractedText,
-//                     style: const TextStyle(fontSize: 16),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

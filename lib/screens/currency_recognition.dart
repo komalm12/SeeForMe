@@ -1,270 +1,14 @@
-// import 'dart:convert';
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_tts/flutter_tts.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:image_picker/image_picker.dart';
+// Import necessary Dart and Flutter packages
+import 'dart:async'; // For using Timer
+import 'dart:convert'; // For decoding JSON response
+import 'dart:io'; // For File handling
 
-// class CurrencyRecognitionPage extends StatefulWidget {
-//   const CurrencyRecognitionPage({super.key});
+import 'package:camera/camera.dart'; // To access device camera
+import 'package:flutter/material.dart'; // UI toolkit for Flutter
+import 'package:flutter_tts/flutter_tts.dart'; // For text-to-speech
+import 'package:http/http.dart' as http; // For making HTTP requests
 
-//   @override
-//   State<CurrencyRecognitionPage> createState() => _CurrencyRecognitionPageState();
-// }
-
-// class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
-//   File? _image;
-//   String result = "";
-//   double confidence = 0.0;
-//   final FlutterTts flutterTts = FlutterTts();
-
-//   Future<void> pickImage() async {
-//     final picker = ImagePicker();
-//     final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-//     if (pickedFile != null) {
-//       setState(() {
-//         _image = File(pickedFile.path);
-//         result = "";
-//         confidence = 0.0;
-//       });
-//       await recognizeCurrency(_image!);
-//     }
-//   }
-
-//   Future<void> recognizeCurrency(File imageFile) async {
-//     final apiKey = "AZkWitHZ7tFt8yHbaPks"; // 🔁 Replace with your Roboflow API Key
-//     final projectName = "currency-detection-cgpjn"; // 🔁 Replace with your Roboflow Project Name
-//     final modelVersion = "2"; // 🔁 Replace with model version, e.g., "1"
-
-//     final url = Uri.parse("https://detect.roboflow.com/currency-detection-cgpjn/2?api_key=AZkWitHZ7tFt8yHbaPks");
-
-//     final request = http.MultipartRequest("POST", url);
-//     request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-//     request.fields['confidence'] = '40'; // Optional confidence filter
-//     request.fields['overlap'] = '30';    // Optional overlap setting
-
-//     final response = await request.send();
-
-//     if (response.statusCode == 200) {
-//       final responseData = await response.stream.bytesToString();
-//       final data = json.decode(responseData);
-
-//       if (data['predictions'] != null && data['predictions'].isNotEmpty) {
-//         final topPrediction = data['predictions'][0];
-
-//         setState(() {
-//           result = topPrediction['class'];
-//           confidence = (topPrediction['confidence'] as num) * 100;
-//         });
-
-//         await flutterTts.speak(
-//             "Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.");
-//       } else {
-//         setState(() {
-//           result = "No currency detected";
-//           confidence = 0.0;
-//         });
-//         await flutterTts.speak("No currency detected.");
-//       }
-//     } else {
-//       print("Currency recognition failed");
-//       await flutterTts.speak("Failed to recognize currency");
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Currency Recognition")),
-//       body: SingleChildScrollView(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             const SizedBox(height: 20),
-//             if (_image != null) Image.file(_image!),
-//             const SizedBox(height: 16),
-//             ElevatedButton(
-//               onPressed: pickImage,
-//               child: const Text("Capture Currency"),
-//             ),
-//             const SizedBox(height: 20),
-//             if (result.isNotEmpty)
-//               Text(
-//                 "Result: $result\nConfidence: ${confidence.toStringAsFixed(2)}%",
-//                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//                 textAlign: TextAlign.center,
-//               ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// import 'dart:convert';
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_tts/flutter_tts.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:image_picker/image_picker.dart';
-
-// class CurrencyRecognitionPage extends StatefulWidget {
-//   const CurrencyRecognitionPage({super.key});
-
-//   @override
-//   State<CurrencyRecognitionPage> createState() => _CurrencyRecognitionPageState();
-// }
-
-// class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
-//   File? _image;
-//   String result = "";
-//   double confidence = 0.0;
-//   final FlutterTts flutterTts = FlutterTts();
-//   bool _isLoading = false;
-
-//   Future<void> pickImage() async {
-//     final picker = ImagePicker();
-//     final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-//     if (pickedFile != null) {
-//       setState(() {
-//         _image = File(pickedFile.path);
-//         result = "";
-//         confidence = 0.0;
-//         _isLoading = true;
-//       });
-//       await recognizeCurrency(_image!);
-//     }
-//   }
-
-//   Future<void> recognizeCurrency(File imageFile) async {
-//     final apiKey = "AZkWitHZ7tFt8yHbaPks";
-//     final url = Uri.parse("https://detect.roboflow.com/currency-detection-cgpjn/2?api_key=$apiKey");
-
-//     final request = http.MultipartRequest("POST", url);
-//     request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-//     request.fields['confidence'] = '40';
-//     request.fields['overlap'] = '30';
-
-//     final response = await request.send();
-//     setState(() => _isLoading = false);
-
-//     if (response.statusCode == 200) {
-//       final responseData = await response.stream.bytesToString();
-//       final data = json.decode(responseData);
-
-//       if (data['predictions'] != null && data['predictions'].isNotEmpty) {
-//         final topPrediction = data['predictions'][0];
-
-//         setState(() {
-//           result = topPrediction['class'].replaceAll(RegExp(r"^\d+-"), ""); // removes "2-" or similar
-//           confidence = (topPrediction['confidence'] as num) * 100;
-//         });
-
-//         await flutterTts.speak(
-//           "Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.",
-//         );
-//       } else {
-//         setState(() {
-//           result = "No currency detected";
-//           confidence = 0.0;
-//         });
-//         await flutterTts.speak("No currency detected.");
-//       }
-//     } else {
-//       setState(() {
-//         result = "Detection failed. Try again.";
-//         confidence = 0.0;
-//       });
-//       await flutterTts.speak("Failed to recognize currency.");
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.black,
-//       appBar: AppBar(
-//         title: const Text("Currency Recognition"),
-//         backgroundColor: Colors.black,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
-//         child: Column(
-//           children: [
-//             if (_image != null)
-//               ClipRRect(
-//                 borderRadius: BorderRadius.circular(16),
-//                 child: Image.file(
-//                   _image!,
-//                   height: 250,
-//                   width: double.infinity,
-//                   fit: BoxFit.cover,
-//                 ),
-//               )
-//             else
-//               Container(
-//                 height: 250,
-//                 decoration: BoxDecoration(
-//                   color: Colors.grey[800],
-//                   borderRadius: BorderRadius.circular(16),
-//                 ),
-//                 child: const Center(
-//                   child: Text(
-//                     "No image selected",
-//                     style: TextStyle(color: Colors.white70),
-//                   ),
-//                 ),
-//               ),
-//             const SizedBox(height: 20),
-//             ElevatedButton.icon(
-//               onPressed: pickImage,
-//               icon: const Icon(Icons.camera_alt),
-//               label: const Text("Capture Currency"),
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: Colors.amber,
-//                 foregroundColor: Colors.black,
-//                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(30),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 30),
-//             if (_isLoading)
-//               const CircularProgressIndicator(color: Colors.amber)
-//             else if (result.isNotEmpty)
-//               Column(
-//                 children: [
-//                   Text(
-//                     "Result: $result",
-//                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-//                     textAlign: TextAlign.center,
-//                   ),
-//                   const SizedBox(height: 10),
-//                   Text(
-//                     "Confidence: ${confidence.toStringAsFixed(2)}%",
-//                     style: const TextStyle(fontSize: 18, color: Colors.white70),
-//                   ),
-//                 ],
-//               ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-import 'package:http/http.dart' as http;
-
+// Define the main CurrencyRecognitionPage widget
 class CurrencyRecognitionPage extends StatefulWidget {
   const CurrencyRecognitionPage({Key? key}) : super(key: key);
 
@@ -272,111 +16,122 @@ class CurrencyRecognitionPage extends StatefulWidget {
   State<CurrencyRecognitionPage> createState() => _CurrencyRecognitionPageState();
 }
 
+// Define the state class for CurrencyRecognitionPage
 class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
-  CameraController? _cameraController;
-  late List<CameraDescription> _cameras;
-  Timer? _detectionTimer;
-  bool _isDetecting = false;
+  CameraController? _cameraController; // Controller for camera
+  late List<CameraDescription> _cameras; // List of available cameras
+  Timer? _detectionTimer; // Timer for periodic detection
+  bool _isDetecting = false; // Flag to avoid overlapping detections
 
-  final FlutterTts flutterTts = FlutterTts();
-  String result = "";
-  double confidence = 0.0;
+  final FlutterTts flutterTts = FlutterTts(); // Instance of text-to-speech
+  String result = ""; // Detected currency label
+  double confidence = 0.0; // Confidence of detection
 
   @override
   void initState() {
     super.initState();
-    initializeCamera();
+    initializeCamera(); // Initialize camera when widget is created
   }
 
+  // Function to initialize the device camera
   Future<void> initializeCamera() async {
-    _cameras = await availableCameras();
-    _cameraController = CameraController(_cameras[0], ResolutionPreset.medium);
+    _cameras = await availableCameras(); // Get list of cameras
+    _cameraController = CameraController(_cameras[0], ResolutionPreset.medium); // Use first camera
 
-    await _cameraController!.initialize();
+    await _cameraController!.initialize(); // Initialize the camera controller
     if (mounted) {
-      setState(() {});
-      startRealTimeDetection();
+      setState(() {}); // Refresh UI
+      startRealTimeDetection(); // Start detection loop
     }
   }
 
+  // Start periodic real-time detection every 4 seconds
   void startRealTimeDetection() {
     _detectionTimer = Timer.periodic(const Duration(seconds: 4), (_) async {
+      // If camera is initialized and not already detecting
       if (_cameraController!.value.isInitialized && !_isDetecting) {
-        _isDetecting = true;
+        _isDetecting = true; // Mark detecting state
         try {
-          final image = await _cameraController!.takePicture();
-          await recognizeCurrency(File(image.path));
+          final image = await _cameraController!.takePicture(); // Capture image from camera
+          await recognizeCurrency(File(image.path)); // Send image for currency recognition
         } catch (e) {
-          print("Error taking picture: $e");
+          print("Error taking picture: $e"); // Handle any errors
         } finally {
-          _isDetecting = false;
+          _isDetecting = false; // Reset detecting state
         }
       }
     });
   }
 
+  // Send image to Roboflow API for currency recognition
   Future<void> recognizeCurrency(File imageFile) async {
+   
     final url = Uri.parse(
         "https://detect.roboflow.com/currency-detection-cgpjn/2?api_key=AZkWitHZ7tFt8yHbaPks");
 
-    final request = http.MultipartRequest("POST", url);
-    request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-    request.fields['confidence'] = '40';
-    request.fields['overlap'] = '30';
+    final request = http.MultipartRequest("POST", url); 
+    request.files.add(await http.MultipartFile.fromPath('file', imageFile.path)); 
+    request.fields['confidence'] = '40'; // Minimum confidence level
+    request.fields['overlap'] = '30'; // Overlap threshold
 
-    final response = await request.send();
+    final response = await request.send(); // Send the request
 
+    // If API returns success
     if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      final data = json.decode(responseData);
+      final responseData = await response.stream.bytesToString(); // Read response stream
+      final data = json.decode(responseData); // Parse JSON
 
+      // Check if any predictions were made
       if (data['predictions'] != null && data['predictions'].isNotEmpty) {
-        final topPrediction = data['predictions'][0];
-        final label = topPrediction['class'].replaceAll(RegExp(r"^\d+-"), "");
+        final topPrediction = data['predictions'][0]; // Use first prediction
+        final label = topPrediction['class'].replaceAll(RegExp(r"^\d+-"), ""); // Clean label
 
+        // If label is different from the last result, speak it out
         if (label != result) {
           setState(() {
-            result = label;
-            confidence = (topPrediction['confidence'] as num) * 100;
+            result = label; // Update detected label
+            confidence = (topPrediction['confidence'] as num) * 100; // Update confidence
           });
 
+          // Speak out the detected currency
           await flutterTts.speak(
               "Detected currency is $result with ${confidence.toStringAsFixed(0)} percent confidence.");
         }
       }
     } else {
-      print("Failed to recognize currency");
+      print("Failed to recognize currency"); // Print error if response fails
     }
   }
 
   @override
   void dispose() {
-    _cameraController?.dispose();
-    _detectionTimer?.cancel();
-    flutterTts.stop();
+    _cameraController?.dispose(); // Dispose camera controller
+    _detectionTimer?.cancel(); // Cancel the timer
+    flutterTts.stop(); // Stop any ongoing TTS
     super.dispose();
   }
 
+  // Build the user interface
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Dark background for contrast
       body: _cameraController == null || !_cameraController!.value.isInitialized
-          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          ? const Center(child: CircularProgressIndicator(color: Colors.white)) // Show loading while camera initializes
           : Stack(
               children: [
-                CameraPreview(_cameraController!),
+                CameraPreview(_cameraController!), // Show live camera feed
                 Positioned(
                   top: 40,
                   left: 20,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.black87,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.black87, // Dark background
+                      borderRadius: BorderRadius.circular(12), // Rounded corners
                     ),
                     child: const Text(
-                      "Real-Time Currency Detection",
+                      "Real-Time Currency Detection", // Header text
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.white,
@@ -386,62 +141,51 @@ class _CurrencyRecognitionPageState extends State<CurrencyRecognitionPage> {
                   ),
                 ),
                 Positioned(
-  bottom: 40,
-  left: 20,
-  right: 20,
-  child: AnimatedOpacity(
-    opacity: 1.0,
-    duration: Duration(milliseconds: 500),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (Widget child, Animation<double> animation) =>
-                ScaleTransition(scale: animation, child: child),
-            child: Text(
-              result.isNotEmpty
-                  ? "💸 $result"
-                  : "📷 Point the camera at a currency note",
-              key: ValueKey(result),
-              style: TextStyle(
-                fontSize: result.isNotEmpty ? 28 : 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (result.isNotEmpty)
-            Text(
-              "Confidence: ${confidence.toStringAsFixed(1)}%",
-              style: const TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey,
-              ),
-            ),
-        ],
-      ),
-    ),
-  ),
-),
-
- ],
+                  bottom: 40,
+                  left: 20,
+                  right: 20,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95), // Light panel background
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26, // Shadow for elevation
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          result.isNotEmpty
+                              ? "💵 $result" // Show detected label
+                              : "👁 Point the camera at a currency note", // Instructional text
+                          style: TextStyle(
+                            fontSize: result.isNotEmpty ? 26 : 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (result.isNotEmpty) ...[ // Show confidence only if result exists
+                          const SizedBox(height: 8),
+                          Text(
+                            "Confidence: ${confidence.toStringAsFixed(1)}%", // Display confidence
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
